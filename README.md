@@ -1,28 +1,39 @@
-# fauria/vsftpd
+# chocapie/vsftpd
 
-![docker_logo](https://raw.githubusercontent.com/fauria/docker-vsftpd/master/docker_139x115.png)![docker_fauria_logo](https://raw.githubusercontent.com/fauria/docker-vsftpd/master/docker_fauria_161x115.png)
-
-[![Docker Pulls](https://img.shields.io/docker/pulls/fauria/vsftpd.svg?style=plastic)](https://hub.docker.com/r/fauria/vsftpd/)
-[![Docker Build Status](https://img.shields.io/docker/build/fauria/vsftpd.svg?style=plastic)](https://hub.docker.com/r/fauria/vsftpd/builds/)
-[![](https://images.microbadger.com/badges/image/fauria/vsftpd.svg)](https://microbadger.com/images/fauria/vsftpd "fauria/vsftpd")
+This image is a fauria/vsftpd fork.
+You can check the original code in https://github.com/fauria/docker-vsftpd/tree/master
 
 This Docker container implements a vsftpd server, with the following features:
 
- * Centos 7 base image.
- * vsftpd 3.0
+ * RockyLinux 9 base image.
+ * vsftpd 3.0.5
  * Virtual users
  * Passive mode
  * Logging to a file or `STDOUT`.
 
-### Installation from [Docker registry hub](https://registry.hub.docker.com/r/fauria/vsftpd/).
+## Build arguments
+----
 
-You can download the image with the following command:
+* Argument name: `USER_ID`
+* Default value: 14
+* Accepted values: Any integer.
+* Description: RockyLinux user ID that will have permissions on the ftp folders. It is recommended that the base OS have a custom user for this use.
 
-```bash
-docker pull fauria/vsftpd
-```
+----
 
-Environment variables
+* Argument name: `GORUP_ID`
+* Default value: 50
+* Accepted values: Any integer.
+* Description: Rocky Linux group ID that will have permissions on the ftp folders. It is recommended that the base OS have a custom group for this use.
+
+----
+
+* Argument name: `USERNAME`
+* Default value: ftp
+* Accepted values: Any string. Avoid whitespaces and special chars.
+* Description: Rocky Linux username that will have permissions on the ftp folders. It is recommended that the base OS have a custom user for this use.
+
+## Environment variables
 ----
 
 This image uses environment variables to allow the configuration of some parameters at run time:
@@ -130,40 +141,3 @@ Exposed ports and volumes
 The image exposes ports `20` and `21`. Also, exports two volumes: `/home/vsftpd`, which contains users home directories, and `/var/log/vsftpd`, used to store logs.
 
 When sharing a homes directory between the host and the container (`/home/vsftpd`) the owner user id and group id should be 14 and 50 respectively. This corresponds to ftp user and ftp group on the container, but may match something else on the host.
-
-Use cases
-----
-
-1) Create a temporary container for testing purposes:
-
-```bash
-  docker run --rm fauria/vsftpd
-```
-
-2) Create a container in active mode using the default user account, with a binded data directory:
-
-```bash
-docker run -d -p 21:21 -v /my/data/directory:/home/vsftpd --name vsftpd fauria/vsftpd
-# see logs for credentials:
-docker logs vsftpd
-```
-
-3) Create a **production container** with a custom user account, binding a data directory and enabling both active and passive mode:
-
-```bash
-docker run -d -v /my/data/directory:/home/vsftpd \
--p 20:20 -p 21:21 -p 21100-21110:21100-21110 \
--e FTP_USER=myuser -e FTP_PASS=mypass \
--e PASV_ADDRESS=127.0.0.1 -e PASV_MIN_PORT=21100 -e PASV_MAX_PORT=21110 \
---name vsftpd --restart=always fauria/vsftpd
-```
-
-4) Manually add a new FTP user to an existing container:
-```bash
-docker exec -i -t vsftpd bash
-mkdir /home/vsftpd/myuser
-echo -e "myuser\nmypass" >> /etc/vsftpd/virtual_users.txt
-/usr/bin/db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
-exit
-docker restart vsftpd
-```

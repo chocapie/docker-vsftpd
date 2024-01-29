@@ -1,23 +1,18 @@
-FROM centos:7
+FROM rockylinux:9
 
 ARG USER_ID=14
 ARG GROUP_ID=50
+ARG USERNAME=ftp
 
-MAINTAINER Fer Uria <fauria@gmail.com>
-LABEL Description="vsftpd Docker image based on Centos 7. Supports passive mode and virtual users." \
-	License="Apache License 2.0" \
-	Usage="docker run -d -p [HOST PORT NUMBER]:21 -v [HOST FTP HOME]:/home/vsftpd fauria/vsftpd" \
-	Version="1.0"
+LABEL Description="vsftpd Docker image based on RockyLinux 9. This is a fauria/vsftpd fork."
 
 RUN yum -y update && yum clean all
 RUN yum install -y \
 	vsftpd \
-	db4-utils \
-	db4 \
 	iproute && yum clean all
 
-RUN usermod -u ${USER_ID} ftp
-RUN groupmod -g ${GROUP_ID} ftp
+RUN usermod -u ${USER_ID} ${USERNAME}
+RUN groupmod -g ${GROUP_ID} ${USERNAME}
 
 ENV FTP_USER **String**
 ENV FTP_PASS **Random**
@@ -40,7 +35,7 @@ COPY run-vsftpd.sh /usr/sbin/
 
 RUN chmod +x /usr/sbin/run-vsftpd.sh
 RUN mkdir -p /home/vsftpd/
-RUN chown -R ftp:ftp /home/vsftpd/
+RUN chown -R ${USERNAME}:${USERNAME} /home/vsftpd/
 
 VOLUME /home/vsftpd
 VOLUME /var/log/vsftpd
